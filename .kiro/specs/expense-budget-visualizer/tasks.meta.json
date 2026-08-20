@@ -247,6 +247,11 @@
         "executionId": "f717b102-c738-450a-8c0c-c421c7eb3f8c",
         "chatSessionId": "sess_f3512d85-0480-4487-b087-55fea3ad4d20",
         "timestamp": 1787239886839
+      },
+      {
+        "executionId": "22e53e6d-0696-4529-81d3-bed17881a55f",
+        "chatSessionId": "sess_f3512d85-0480-4487-b087-55fea3ad4d20",
+        "timestamp": 1787243313882
       }
     ],
     "13.1 Build Monthly Summary markup and handlers in `index.html` and `js/app.js`": [
@@ -311,6 +316,37 @@
         "executionId": "271a9e6a-c88f-4f0d-8356-797938e31f50",
         "chatSessionId": "sess_e2a7c33c-f06c-451b-9a47-2501e2f465d6",
         "timestamp": 1787242300484
+      },
+      {
+        "executionId": "791c966d-5285-40bf-8122-12607b957077",
+        "chatSessionId": "sess_e2a7c33c-f06c-451b-9a47-2501e2f465d6",
+        "timestamp": 1787242829680
+      }
+    ],
+    "16. Responsive CSS and accessibility": [
+      {
+        "executionId": "791c966d-5285-40bf-8122-12607b957077",
+        "chatSessionId": "sess_e2a7c33c-f06c-451b-9a47-2501e2f465d6",
+        "timestamp": 1787242829802
+      }
+    ],
+    "17. Final checkpoint — integration and wiring complete": [
+      {
+        "executionId": "77a40d4d-daee-464d-b822-ad0ea812e9bd",
+        "chatSessionId": "sess_4ab94165-5fc9-44da-b7ee-242360536839",
+        "timestamp": 1787242872953
+      },
+      {
+        "executionId": "77a40d4d-daee-464d-b822-ad0ea812e9bd",
+        "chatSessionId": "sess_4ab94165-5fc9-44da-b7ee-242360536839",
+        "timestamp": 1787243114583
+      }
+    ],
+    "12. Category Manager UI": [
+      {
+        "executionId": "22e53e6d-0696-4529-81d3-bed17881a55f",
+        "chatSessionId": "sess_f3512d85-0480-4487-b087-55fea3ad4d20",
+        "timestamp": 1787243313975
       }
     ]
   }

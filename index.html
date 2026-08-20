@@ -71,7 +71,25 @@
 
     <section id="category-section">
       <h2>Manage Categories</h2>
-      <!-- Category_Manager UI: custom category input, list, delete buttons -->
+
+      <div class="form-group">
+        <label for="custom-category-name">New Category Name</label>
+        <input
+          type="text"
+          id="custom-category-name"
+          maxlength="50"
+          aria-describedby="category-error"
+          autocomplete="off"
+          placeholder="e.g. Gym"
+        >
+      </div>
+
+      <button type="button" id="add-category-btn">Add Category</button>
+      <span id="category-error" class="field-error" aria-live="polite" hidden></span>
+
+      <ul id="custom-category-list" aria-label="Custom categories">
+        <!-- populated by renderCustomCategoryList() -->
+      </ul>
     </section>
 
     <section id="chart-section">

@@ -118,8 +118,8 @@ tests/property.html
   - Manually verify: add a transaction → list, balance, chart all update; reload → data persists; delete → list, balance, chart update
   - Ask the user if any questions or adjustments are needed before continuing
 
-- [~] 12. Category Manager UI
-  - [-] 12.1 Build Category Manager markup and handlers in `index.html` and `js/app.js`
+- [x] 12. Category Manager UI
+  - [x] 12.1 Build Category Manager markup and handlers in `index.html` and `js/app.js`
     - Add to `#category-section`: `<input type="text" id="custom-category-name" maxlength="50">`, `<button id="add-category-btn">Add Category</button>`, `<ul id="custom-category-list">`, `<span id="category-error">`
     - Implement `renderCustomCategoryList(customCategories)`: render each custom category as `<li>` with a delete button; if count ≥ 50 disable `#add-category-btn` and show the cap message
     - Implement add-category handler: call `Validator.validateCategory`, show inline error on failure; on success call `StorageManager.saveCategories`, update `AppState.customCategories`, re-render category list and dropdown
@@ -152,8 +152,8 @@ tests/property.html
     - Populate `AppState`, then call `renderCategoryDropdown`, `renderTransactionList`, `renderBalance`, `renderChart`, `renderSummary`, `updateSortActiveState` — all before returning control to the user
     - _Requirements: 1.3, 1.5, 2.2, 2.7_
 
-- [~] 16. Responsive CSS and accessibility
-  - [-] 16.1 Write responsive layout and base styles in `css/styles.css`
+- [x] 16. Responsive CSS and accessibility
+  - [x] 16.1 Write responsive layout and base styles in `css/styles.css`
     - Apply a fluid single-column layout at 320px that expands to a two-column (form + chart side-by-side) layout at ≥ 768px and a three-column arrangement at ≥ 1200px using CSS Grid or Flexbox; no horizontal scrollbar from 320px to 1920px
     - Set font sizes for headings, labels, amounts, and body text such that each level differs by at least 2px from adjacent levels
     - Choose foreground/background color pairs meeting WCAG 2.1 AA: ≥ 4.5:1 for normal text, ≥ 3:1 for large text
@@ -163,7 +163,7 @@ tests/property.html
     - Style `.empty-state`, error banners, inline error spans, category badge, and the chart legend
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-- [~] 17. Final checkpoint — integration and wiring complete
+- [x] 17. Final checkpoint — integration and wiring complete
   - Ensure all tests in `tests/property.html` pass (all 10 properties, minimum 100 iterations each)
   - Verify end-to-end: add transaction → sort → filter by month → clear filter → add custom category → delete transaction → reload
   - Ask the user if any questions or adjustments are needed

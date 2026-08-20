@@ -409,6 +409,72 @@ function renderCategoryDropdown(customCategories) {
 }
 
 // ─────────────────────────────────────────────
+// renderCustomCategoryList
+// Re-renders the #custom-category-list <ul> with the current custom
+// categories.  Each entry gets a delete button labelled for screen readers.
+// When the cap (MAX_CUSTOM = 50) is reached, #add-category-btn is disabled
+// and a cap message is shown beneath it.
+// Requirements: 7.1, 7.6
+// ─────────────────────────────────────────────
+function renderCustomCategoryList(customCategories) {
+  const list    = document.getElementById('custom-category-list');
+  const addBtn  = document.getElementById('add-category-btn');
+  const errorEl = document.getElementById('category-error');
+
+  if (!list || !addBtn) return;
+
+  // Re-render the list.
+  list.innerHTML = '';
+
+  if (customCategories.length === 0) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.textContent = 'No custom categories yet.';
+    list.appendChild(empty);
+  } else {
+    customCategories.forEach((name) => {
+      const li = document.createElement('li');
+      li.className = 'custom-category-item';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'custom-category-name';
+      nameSpan.textContent = name;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'delete-category-btn';
+      deleteBtn.dataset.name = name;
+      deleteBtn.setAttribute('aria-label', `Delete category ${name}`);
+      deleteBtn.textContent = 'Delete';
+
+      li.appendChild(nameSpan);
+      li.appendChild(deleteBtn);
+      list.appendChild(li);
+    });
+  }
+
+  // Cap enforcement: disable button and show/hide cap message.
+  const atCap = !CategoryManager.canAddMore(customCategories);
+  addBtn.disabled = atCap;
+
+  // Reuse the category-error span for the cap message when at limit.
+  if (errorEl) {
+    if (atCap) {
+      errorEl.textContent =
+        `Maximum of ${CategoryManager.MAX_CUSTOM} custom categories reached.`;
+      errorEl.removeAttribute('hidden');
+    } else {
+      // Only clear the cap message; leave any validation error that was just
+      // set by the add-category handler alone — the handler clears it itself.
+      if (errorEl.textContent.startsWith('Maximum of')) {
+        errorEl.textContent = '';
+        errorEl.setAttribute('hidden', '');
+      }
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
 // showFormErrors
 // Displays inline validation error messages for the transaction
 // input form.  Accepts an errors object whose keys match field
@@ -861,6 +927,107 @@ document.addEventListener('DOMContentLoaded', function wireAddBtn() {
 });
 
 // ─────────────────────────────────────────────
+// Add-category handler
+// Wired to #add-category-btn click.
+// Reads the custom-category-name input → validates (against all existing
+// categories, default + custom) → persists → updates state → re-renders.
+//
+// Requirements: 7.2, 7.3, 7.4
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function wireAddCategoryBtn() {
+  const addCategoryBtn = document.getElementById('add-category-btn');
+  if (!addCategoryBtn) return;
+
+  addCategoryBtn.addEventListener('click', function handleAddCategory() {
+    const input   = document.getElementById('custom-category-name');
+    const errorEl = document.getElementById('category-error');
+    if (!input) return;
+
+    const name = input.value;
+
+    // Clear any previous inline error before re-validating.
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.setAttribute('hidden', '');
+    }
+
+    // Validate against the full list (defaults + custom) for duplicate detection.
+    const allExisting = CategoryManager.getAll(AppState.customCategories);
+    const result = Validator.validateCategory(name, allExisting);
+
+    if (!result.valid) {
+      if (errorEl) {
+        errorEl.textContent = result.error;
+        errorEl.removeAttribute('hidden');
+      }
+      return;
+    }
+
+    // Build the updated custom categories array.
+    const updated    = [...AppState.customCategories, name.trim()];
+    const saveResult = StorageManager.saveCategories(updated);
+
+    if (!saveResult.ok) {
+      showErrorBanner("Data could not be saved. Check your browser's storage settings.");
+      return;
+    }
+
+    // Persist succeeded — update state and re-render.
+    AppState.customCategories = updated;
+    renderCustomCategoryList(AppState.customCategories);
+    renderCategoryDropdown(AppState.customCategories);
+
+    // Clear the input and return focus to it.
+    input.value = '';
+    input.focus();
+  });
+});
+
+// ─────────────────────────────────────────────
+// Delete-category — delegated listener
+// A single click listener on #custom-category-list handles all
+// delete-category buttons via event delegation.
+//
+// Flow:
+//   1. Identify clicked .delete-category-btn and extract data-name
+//   2. Remove the name from AppState.customCategories
+//   3. Persist via StorageManager
+//   4a. On failure → show error banner, keep list unchanged
+//   4b. On success → update AppState, re-render category list and dropdown
+//
+// Note: Transactions that reference the deleted category are NOT affected —
+//       they simply retain the category name as a historical label.
+//
+// Requirements: 7.1, 7.4 (persistence), 7.5
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function wireDeleteCategoryBtn() {
+  const categoryList = document.getElementById('custom-category-list');
+  if (!categoryList) return;
+
+  categoryList.addEventListener('click', function handleDeleteCategory(event) {
+    const btn = event.target.closest('.delete-category-btn');
+    if (!btn) return;
+
+    const targetName = btn.dataset.name;
+    if (!targetName) return;
+
+    // Build the updated list without the deleted category.
+    const updated    = AppState.customCategories.filter((c) => c !== targetName);
+    const saveResult = StorageManager.saveCategories(updated);
+
+    if (!saveResult.ok) {
+      showErrorBanner("Data could not be saved. Check your browser's storage settings.");
+      return;
+    }
+
+    // Persist succeeded — update state and re-render.
+    AppState.customCategories = updated;
+    renderCustomCategoryList(AppState.customCategories);
+    renderCategoryDropdown(AppState.customCategories);
+  });
+});
+
+// ─────────────────────────────────────────────
 // Month-filter change handler
 // Updates AppState.activeFilter when the user picks a month,
 // then re-renders the list, summary, and chart.
@@ -1065,6 +1232,7 @@ function initApp() {
 
   // ── 7. Render all UI components ────────────────────────────────────────
   renderCategoryDropdown(AppState.customCategories); // Requirement 3.6, 7.5
+  renderCustomCategoryList(AppState.customCategories); // Requirement 7.5 — restore saved categories
   renderTransactionList();  // Requirement 4.3 — populated before interaction
   renderBalance();          // Requirement 5.5 — balance visible before interaction
   renderChart();            // Requirement 6.3 — chart reflects persisted data

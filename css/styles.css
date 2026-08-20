@@ -1,18 +1,657 @@
-/* Expense & Budget Visualizer styles */
+/* ============================================================
+   Expense & Budget Visualizer — styles.css
+   Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6
+   ============================================================ */
+
+/* ── CSS Custom Properties ────────────────────────────────────────────── */
+:root {
+  /* Brand palette */
+  --color-primary:      #1a56db;   /* blue — links, buttons                  */
+  --color-primary-dark: #1e429f;   /* hover/active state                     */
+  --color-danger:       #c81e1e;   /* delete, error                           */
+  --color-danger-dark:  #9b1c1c;   /* danger hover                            */
+  --color-success:      #057a55;   /* success accent                          */
+
+  /* Neutral surface palette */
+  --color-bg:           #f9fafb;   /* page background  (#f9fafb on white ≥ 21:1) */
+  --color-surface:      #ffffff;   /* card/section background                 */
+  --color-border:       #d1d5db;   /* input & card borders                    */
+  --color-border-focus: #1a56db;   /* focus ring colour (≥ 3:1 on white)     */
+
+  /* Text colours — all ≥ 4.5:1 on white / --color-surface */
+  --color-text:         #111827;   /* body text         (~18:1 on white)      */
+  --color-text-muted:   #4b5563;   /* secondary/helper  (~9:1 on white)       */
+  --color-text-light:   #6b7280;   /* placeholder, date (~5.9:1 on white)     */
+
+  /* Typography scale (each level ≥ 2px from adjacent) */
+  --fs-xs:   12px;   /* legend amounts, helper notes                         */
+  --fs-sm:   14px;   /* labels, badges, table cells (12 + 2)                 */
+  --fs-base: 16px;   /* body text (14 + 2)                                   */
+  --fs-md:   18px;   /* sub-headings, balance value (16 + 2)                 */
+  --fs-lg:   22px;   /* section headings <h2> (18 + 4)                       */
+  --fs-xl:   28px;   /* page heading <h1> (22 + 6)                           */
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Misc */
+  --radius:   6px;
+  --radius-lg: 10px;
+  --shadow:   0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+
+  /* Tap-target floor (req 10.6) — applied at ≤ 1024px via media query */
+  --tap-min: 44px;
+}
+
+/* ── Reset / Base ─────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Prevent horizontal overflow at any viewport width (req 10.2) */
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  min-width: 320px;      /* prevents sub-320px layout collapse */
+  overflow-x: hidden;
+}
+
+/* ── Typography hierarchy (req 10.3) ─────────────────────────────────── */
+h1 {
+  font-size: var(--fs-xl);   /* 28px */
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+h2 {
+  font-size: var(--fs-lg);   /* 22px — 28-6=22; ≥ 2px gap from h1 */
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
+}
+
+label {
+  display: block;
+  font-size: var(--fs-sm);   /* 14px — ≥ 2px below base */
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+
+/* ── Focus indicators (req 10.5) ─────────────────────────────────────── */
+/* Applied globally then scoped to interactive elements */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Remove default outline only when focus-visible is supported */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-border-focus);  /* #1a56db — 4.5:1 on white */
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* ── Page Header ─────────────────────────────────────────────────────── */
+header {
+  background-color: var(--color-primary-dark);
+  color: #ffffff;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+header h1 {
+  color: #ffffff;
+  font-size: var(--fs-xl);
+}
+
+/* Balance_Display */
+.balance-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background-color: rgba(255,255,255,.15);
+  border-radius: var(--radius);
+  padding: var(--space-xs) var(--space-md);
+}
+
+.balance-label {
+  font-size: var(--fs-sm);   /* 14px */
+  color: rgba(255,255,255,.85);
+  font-weight: 500;
+}
+
+#balance-total {
+  font-size: var(--fs-md);   /* 18px — ≥ 2px above label (14 → 18) */
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ── Main Layout — CSS Grid (req 10.2) ────────────────────────────────── */
+/*
+  Mobile-first: single column
+  ≥ 768px:  two columns  (input/category left · chart/summary right)
+  ≥ 1200px: three columns (input | chart+summary | list)
+*/
+
+main {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md);
+
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "input"
+    "category"
+    "chart"
+    "summary"
+    "list";
+  gap: var(--space-lg);
+}
+
+/* Assign grid areas */
+#input-section    { grid-area: input;    }
+#category-section { grid-area: category; }
+#chart-section    { grid-area: chart;    }
+#summary-section  { grid-area: summary;  }
+#list-section     { grid-area: list;     }
+
+/* ≥ 768px: two-column layout (req — form + chart side-by-side) */
+@media (min-width: 768px) {
+  main {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "input    chart"
+      "category summary"
+      "list     list";
+  }
+}
+
+/* ≥ 1200px: three-column layout */
+@media (min-width: 1200px) {
+  main {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas:
+      "input   chart   list"
+      "category summary list";
+  }
+}
+
+/* ── Section cards ───────────────────────────────────────────────────── */
+main > section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow);
+}
+
+/* List section needs full height when it spans rows */
+@media (min-width: 1200px) {
+  #list-section {
+    grid-row: 1 / 3;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+  }
+}
+
+/* ── Form elements ───────────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: var(--space-md);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="month"],
+select {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--fs-base);         /* 16px — avoids iOS zoom */
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color .15s ease, box-shadow .15s ease;
+  appearance: auto;                  /* keep native select arrow */
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+input[type="month"]:hover,
+select:hover {
+  border-color: #9ca3af;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="month"]:focus,
+select:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(26,86,219,.20);
+  outline: none;   /* box-shadow replaces outline for inputs */
+}
+
+input::placeholder {
+  color: var(--color-text-light);
+  font-size: var(--fs-base);
+}
+
+/* Primary button */
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--space-sm) var(--space-lg);
+  transition: background-color .15s ease, box-shadow .15s ease;
+}
+
+#add-btn,
+#add-category-btn {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  display: block;
+  width: 100%;
+  margin-top: var(--space-sm);
+}
+
+#add-btn:hover,
+#add-category-btn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+#add-btn:active,
+#add-category-btn:active {
+  background-color: #1e3a8a;
+}
+
+#add-btn:disabled,
+#add-category-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ── Inline field-error spans (req 3.3) ──────────────────────────────── */
+.field-error {
+  display: block;
+  font-size: var(--fs-xs);    /* 12px */
+  color: var(--color-danger); /* #c81e1e — 5.9:1 on white, AA pass */
+  margin-top: var(--space-xs);
+  font-weight: 500;
+}
+
+/* CSS `hidden` attribute honoured; JS removes the attribute to show */
+[hidden] {
+  display: none !important;
+}
+
+input[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+/* ── Error banner (showErrorBanner / #unsupported-banner) ────────────── */
+.error-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-left: 4px solid var(--color-danger);
+  border-radius: var(--radius);
+  color: #7f1d1d;              /* ~9:1 on #fef2f2 — AA pass */
+  font-size: var(--fs-sm);     /* 14px */
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.error-banner-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #7f1d1d;
+  font-size: var(--fs-lg);     /* 22px — large enough tap target */
+  line-height: 1;
+  padding: 0 var(--space-xs);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.error-banner-close:hover {
+  color: var(--color-danger-dark);
+}
+
+#unsupported-banner {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #5a4000;              /* ~8:1 on #fff3cd — AA pass */
+  padding: var(--space-md) var(--space-lg);
+  text-align: center;
+  font-size: var(--fs-base);
+}
+
+#unsupported-banner p {
+  margin: 0;
+}
+
+/* ── Category Manager section ─────────────────────────────────────────── */
+#category-section .form-group {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+#category-section .form-group label {
+  width: 100%;
+}
+
+#custom-category-name {
+  flex: 1;
+  min-width: 0;
+}
+
+#add-category-btn {
+  width: auto;
+  white-space: nowrap;
+  margin-top: 0;
+}
+
+#category-error {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--color-danger);
+  margin-top: var(--space-xs);
+  font-weight: 500;
+  width: 100%;
+}
+
+/* Custom category list */
+#custom-category-list {
+  list-style: none;
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+#custom-category-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+}
+
+/* ── Transaction List ─────────────────────────────────────────────────── */
+#transaction-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: var(--space-xs);   /* avoid scrollbar overlap */
+}
+
+/* At ≥ 1200px list-section spans full height; let the section scroll instead */
+@media (min-width: 1200px) {
+  #transaction-list {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+/*
+  Each transaction card uses flexbox with wrapping.
+  Row 1: [name — grows]  [amount — right-aligned]
+  Row 2: [category badge] [date] [delete — right-aligned via auto margin]
+*/
+.transaction-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.transaction-name {
+  flex: 1 1 55%;
+  min-width: 0;
+  font-size: var(--fs-base);   /* 16px */
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.transaction-amount {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-size: var(--fs-md);     /* 18px — ≥ 2px above name */
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  white-space: nowrap;
+}
+
+/* Category badge */
+.transaction-category {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  background-color: #dbeafe;    /* light blue */
+  color: #1e3a8a;               /* ~8.7:1 on #dbeafe — AA pass */
+  font-size: var(--fs-xs);      /* 12px */
+  font-weight: 600;
+  padding: 2px var(--space-xs);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.transaction-date {
+  flex: 0 0 auto;
+  font-size: var(--fs-xs);      /* 12px */
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.delete-btn {
+  flex: 0 0 auto;
+  margin-left: auto;
+  background-color: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  font-size: var(--fs-xs);     /* 12px */
+  font-weight: 600;
+  padding: 3px var(--space-sm);
+  border-radius: var(--radius);
+  transition: background-color .15s, color .15s;
+}
+
+.delete-btn:hover {
+  background-color: var(--color-danger);
+  color: #ffffff;
+}
+
+/* Delete buttons on custom category list items */
+#custom-category-list .delete-btn {
+  margin-left: 0;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty-state {
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+  color: var(--color-text-muted);   /* #4b5563 — ~9:1 on white — AA pass */
+  font-size: var(--fs-base);        /* 16px */
+  font-style: italic;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  list-style: none;
+}
+
+/* ── Sort control ────────────────────────────────────────────────────── */
+.sort-control-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.sort-control-wrapper label {
+  margin-bottom: 0;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+}
+
+#sort-control {
+  flex: 1;
+  min-width: 160px;
+}
+
+/* Active sort option (req 9.5 / req 10 — [data-active] selector) */
+#sort-control option[data-active] {
+  font-weight: 700;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
+
+/* ── Monthly Summary section ─────────────────────────────────────────── */
+.summary-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.summary-controls label {
+  margin-bottom: 0;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+}
+
+#month-filter {
+  flex: 1;
+  min-width: 140px;
+}
+
+#clear-filter {
+  background-color: #f3f4f6;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs-sm);
+  padding: var(--space-xs) var(--space-md);
+  white-space: nowrap;
+}
+
+#clear-filter:hover {
+  background-color: #e5e7eb;
+}
+
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.summary-label {
+  font-size: var(--fs-sm);     /* 14px */
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+#summary-total {
+  font-size: var(--fs-md);     /* 18px — ≥ 2px above label */
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ── Chart section ───────────────────────────────────────────────────── */
+#chart-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#expense-chart {
+  width: 100% !important;
+  max-width: 360px;
+  height: auto !important;
+}
+
+#chart-empty {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--fs-base);
+  font-style: italic;
+}
 
 /* ── Chart legend ─────────────────────────────────────────────────────── */
 #chart-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  justify-content: center;
+  width: 100%;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);     /* 14px */
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-xs) var(--space-sm);
 }
 
 .legend-swatch {
@@ -21,28 +660,78 @@
   height: 14px;
   border-radius: 3px;
   flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,.12);
 }
 
 .legend-name {
   font-weight: 600;
+  color: var(--color-text);
+  font-size: var(--fs-sm);     /* 14px */
 }
 
 .legend-amount {
-  color: #555;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);     /* 12px — ≥ 2px below legend-name */
 }
 
-/* ── Unsupported-browser banner ───────────────────────────────────────── */
-/* Shown by initApp() when localStorage is unavailable.                    */
-/* Hidden by default via the `hidden` HTML attribute on the element.       */
-#unsupported-banner {
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #5a4000;
-  padding: 16px 20px;
-  text-align: center;
-  font-size: 1rem;
+/* ── Tap target floor at ≤ 1024px (req 10.6) ─────────────────────────── */
+@media (max-width: 1024px) {
+  button,
+  input[type="text"],
+  input[type="number"],
+  input[type="month"],
+  select {
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+  }
+
+  /* Inline delete buttons on list items stay compact but meet height */
+  .delete-btn {
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    padding: 0 var(--space-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .error-banner-close {
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
-#unsupported-banner p {
-  margin: 0;
+/* ── Scrollbar styling (non-intrusive) ────────────────────────────────── */
+#transaction-list::-webkit-scrollbar,
+#custom-category-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+#transaction-list::-webkit-scrollbar-track,
+#custom-category-list::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 3px;
+}
+
+#transaction-list::-webkit-scrollbar-thumb,
+#custom-category-list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+/* ── Utility ──────────────────────────────────────────────────────────── */
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
 }
