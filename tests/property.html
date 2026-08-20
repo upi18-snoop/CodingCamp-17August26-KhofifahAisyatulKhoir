@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Tests — Expense &amp; Budget Visualizer</title>
+  <style>
+    body { font-family: sans-serif; padding: 1.5rem; background: #fafafa; color: #222; }
+    h1   { margin-bottom: 0.25rem; }
+    p.subtitle { margin: 0 0 1.5rem; color: #555; font-size: 0.9rem; }
+
+    #results { list-style: none; padding: 0; margin: 0; }
+    #results li {
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.4rem;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      border-left: 4px solid transparent;
+    }
+    .pass   { background: #e6f9ec; border-color: #27ae60; color: #1a6b3c; }
+    .fail   { background: #fdecea; border-color: #c0392b; color: #7b1f1f; }
+    .skip   { background: #fefae6; border-color: #f39c12; color: #7a5200; }
+    .running{ background: #eef4fb; border-color: #2980b9; color: #1a4a7a; }
+
+    .summary {
+      margin-top: 1.5rem;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      background: #e8e8e8;
+    }
+    .summary.all-pass { background: #d4edda; color: #155724; }
+    .summary.has-fail { background: #f8d7da; color: #721c24; }
+
+    details { margin-top: 0.3rem; font-size: 0.82rem; }
+    details summary { cursor: pointer; }
+    pre { margin: 0.4rem 0 0; white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <h1>Property-Based Tests</h1>
+  <p class="subtitle">Expense &amp; Budget Visualizer — Properties 1–10 &nbsp;|&nbsp; 100 iterations each</p>
+  <ul id="results"></ul>
+  <div id="summary" class="summary">Running…</div>
+
+  <!--
+    ══════════════════════════════════════════════════════
+    STEP 1 — DOM stubs
+    Must appear BEFORE js/app.js so that DOMContentLoaded
+    wiring functions (initApp, wireAddBtn, wireDeleteBtn)
+    are silently suppressed during testing.
+    ══════════════════════════════════════════════════════
+  -->
+  <script>
+    // Suppress every DOMContentLoaded listener registered by app.js
+    // so none of the UI-wiring functions fire (they would crash on
+    // missing real DOM elements).
+    (function () {
+      const _real = document.addEventListener.bind(document);
+      document.addEventListener = function (type, handler, options) {
+        if (type === 'DOMContentLoaded') return; // swallow
+        return _real(type, handler, options);
+      };
+    }());
+
+    // Stub getElementById / querySelector so any render helper that
+    // does execute doesn't throw on a null element.
+    const _stubEl = () => ({
+      textContent: '',
+      innerHTML: '',
+      value: '',
+      selectedIndex: 0,
+      style: {},
+      dataset: {},
+      firstChild: null,
+      getAttribute: () => null,
+      setAttribute: () => {},
+      removeAttribute: () => {},
+      appendChild: () => {},
+      insertBefore: () => {},
+      remove: () => {},
+      addEventListener: () => {},
+      closest: () => null,
+      focus: () => {},
+    });
+    document.getElementById    = () => _stubEl();
+    document.querySelector     = () => _stubEl();
+    document.querySelectorAll  = () => [];
+    document.createElement     = (tag) => _stubEl();  // prevent real element creation during stubs
+  </script>
+
+  <!-- STEP 2 — Load application code (globals become available after this) -->
+  <script src="../js/app.js"></script>
+
+  <!-- STEP 3 — Restore real DOM methods, bridge app globals onto window,
+       and expose them for the test module. -->
+  <script>
+    // Restore real DOM methods that were stubbed in STEP 1.
+    // (They were stubbed only to prevent app.js render calls from crashing.)
+    delete document.createElement;
+    delete document.getElementById;
+    delete document.querySelector;
+    delete document.querySelectorAll;
+
+    // Expose app.js module-scoped symbols on window so the ESM test module can access them.
+    // Top-level `const` in a plain script is NOT automatically on `window`.
+    window._appGlobals = {
+      StorageManager,
+      Validator,
+      CategoryManager,
+      SortFilter,
+      AppState,
+      sumAmounts,
+      formatCurrency,
+      formatDate,
+      generateId,
+      computeCategoryPercentages,
+    };
+  </script>
+
+  <!-- STEP 4 — fast-check loaded as ESM via esm.sh CDN.
+       Test code is a module so it can import fast-check;
+       it reads app.js globals via window._appGlobals. -->
+  <script type="module">
+    // Import fast-check as an ESM module (esm.sh re-packages any npm module for browsers)
+    import * as fc from 'https://esm.sh/fast-check@3.23.2';
+
+    // Pull app.js symbols from the bridge object
+    const {
+      StorageManager,
+      Validator,
+      CategoryManager,
+      SortFilter,
+      AppState,
+      sumAmounts,
+      computeCategoryPercentages,
+    } = window._appGlobals;
+
+    'use strict';
+
+    // ─────────────────────────────────────────────────────────
+    // Test harness helpers
+    // ─────────────────────────────────────────────────────────
+    const results = document.getElementById('results');
+    const summaryEl = document.getElementById('summary');
+    let passed = 0;
+    let failed = 0;
+
+    function recordResult(label, ok, detail) {
+      const li = document.createElement('li');
+      li.className = ok ? 'pass' : 'fail';
+
+      const icon = ok ? '✔' : '✘';
+      li.textContent = `${icon}  ${label}`;
+
+      if (!ok && detail) {
+        const det = document.createElement('details');
+        const sum = document.createElement('summary');
+        sum.textContent = 'Counterexample / error';
+        const pre = document.createElement('pre');
+        pre.textContent = typeof detail === 'string'
+          ? detail
+          : JSON.stringify(detail, null, 2);
+        det.appendChild(sum);
+        det.appendChild(pre);
+        li.appendChild(det);
+      }
+
+      results.appendChild(li);
+      if (ok) passed++; else failed++;
+    }
+
+    function finalizeSummary() {
+      const total = passed + failed;
+      summaryEl.textContent = `${passed} / ${total} properties passed`;
+      summaryEl.className = 'summary ' + (failed === 0 ? 'all-pass' : 'has-fail');
+    }
+
+    /**
+     * Run a single fast-check property, catch errors/counterexamples,
+     * and record a pass/fail result.
+     *
+     * @param {string}   label   Human-readable test label
+     * @param {Function} arb     () => fc.Arbitrary<T>  (thunk so we can catch generator errors)
+     * @param {Function} pred    T => boolean
+     * @param {object}   [opts]  fc.assert options (e.g. { numRuns: 100 })
+     */
+    function runProperty(label, arb, pred, opts = {}) {
+      try {
+        fc.assert(
+          fc.property(arb(), pred),
+          { numRuns: 100, ...opts }
+        );
+        recordResult(label, true);
+      } catch (err) {
+        recordResult(label, false, err && err.message ? err.message : String(err));
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // localStorage mock helper (used by P6 and P7)
+    // Temporarily replaces window.localStorage with an in-memory
+    // stub and restores the original afterwards.
+    // ─────────────────────────────────────────────────────────
+    function withMockStorage(fn) {
+      const store = {};
+      const mockStorage = {
+        getItem:    (k) => Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null,
+        setItem:    (k, v) => { store[k] = String(v); },
+        removeItem: (k) => { delete store[k]; },
+      };
+      const origDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+      Object.defineProperty(window, 'localStorage', {
+        value: mockStorage,
+        configurable: true,
+        writable: true,
+      });
+      try {
+        return fn();
+      } finally {
+        if (origDescriptor) {
+          Object.defineProperty(window, 'localStorage', origDescriptor);
+        } else {
+          delete window.localStorage;
+        }
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Shared transaction arbitrary
+    // Produces Transaction-shaped objects with valid fields.
+    // ─────────────────────────────────────────────────────────
+    const txnArb = fc.record({
+      id:        fc.string({ minLength: 1, maxLength: 36 }),
+      name:      fc.string({ minLength: 1, maxLength: 100 }),
+      amount:    fc.float({ min: 0.01, max: 999999999.99, noNaN: true, noDefaultInfinity: true }),
+      category:  fc.constantFrom('Food', 'Transport', 'Fun', 'Other'),
+      timestamp: fc.date({ min: new Date('2020-01-01'), max: new Date('2030-12-31') })
+                   .map(d => d.toISOString()),
+    });
+
+    // Arbitrary for all valid sort keys
+    const sortKeyArb = fc.constantFrom(
+      'newest', 'amount-asc', 'amount-desc', 'category-az', 'category-za'
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 1: Transaction amount sum equals Balance_Display value
+    // Feature: expense-budget-visualizer, Property 1: Amount sum equals Balance
+    // Validates: Requirements 5.1, 5.4
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P1: sumAmounts(transactions) === arithmetic sum of all amounts',
+      () => fc.array(
+        fc.record({
+          amount: fc.float({ min: 0.01, max: 999999999.99, noNaN: true, noDefaultInfinity: true }),
+        }),
+        { minLength: 0, maxLength: 50 }
+      ),
+      (txns) => {
+        // Both use the same floating-point reduce — they should be bit-identical.
+        // A tolerance guard handles any edge case where JS optimises differently.
+        const expected = txns.reduce((s, t) => s + t.amount, 0);
+        const actual   = sumAmounts(txns);
+        return actual === expected || Math.abs(actual - expected) <= Math.abs(expected) * 1e-9 + 1e-9;
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 2a: Whitespace / empty name is rejected
+    // Feature: expense-budget-visualizer, Property 2: Empty input rejection
+    // Validates: Requirements 3.2, 3.3
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P2a: Validator.validateTransaction — whitespace/empty name is invalid',
+      () => fc.tuple(
+        // name: empty string OR string composed only of whitespace
+        fc.oneof(
+          fc.constant(''),
+          fc.stringMatching(/^\s+$/)   // one or more whitespace chars
+        ),
+        // valid amount and category so name is the only failing field
+        fc.float({ min: 0.01, max: 999999999.99, noNaN: true, noDefaultInfinity: true })
+          .map(n => String(n)),
+        fc.constantFrom('Food', 'Transport', 'Fun')
+      ),
+      ([name, amount, category]) => {
+        const result = Validator.validateTransaction({ name, amount, category });
+        return result.valid === false && result.errors.name !== undefined;
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 2b: Invalid amounts are rejected
+    // Feature: expense-budget-visualizer, Property 2: Empty input rejection
+    // Validates: Requirements 3.2, 3.3
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P2b: Validator.validateTransaction — invalid amounts are rejected',
+      () => fc.tuple(
+        // valid name
+        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        // invalid amount: ≤ 0 OR > 999999999.99 OR non-numeric
+        fc.oneof(
+          fc.constant(''),
+          fc.constant('0'),
+          fc.constant('-1'),
+          fc.constant('abc'),
+          // negative floats
+          fc.float({ min: -1000000, max: -0.001, noNaN: true, noDefaultInfinity: true })
+            .map(n => String(n)),
+          // above maximum
+          fc.float({ min: 1000000000, max: 9999999999, noNaN: true, noDefaultInfinity: true })
+            .map(n => String(n))
+        ),
+        // valid category
+        fc.constantFrom('Food', 'Transport', 'Fun')
+      ),
+      ([name, amount, category]) => {
+        const result = Validator.validateTransaction({ name, amount, category });
+        return result.valid === false && result.errors.amount !== undefined;
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 3: Sort order stability
+    // Feature: expense-budget-visualizer, Property 3: Sort order stability
+    // Validates: Requirements 9.1, 9.2
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P3: SortFilter.sort — result satisfies comparator for each sort key',
+      () => fc.tuple(
+        fc.array(txnArb, { minLength: 0, maxLength: 30 }),
+        sortKeyArb
+      ),
+      ([transactions, sortKey]) => {
+        const sorted = SortFilter.sort(transactions, sortKey);
+
+        for (let i = 0; i < sorted.length - 1; i++) {
+          const a = sorted[i];
+          const b = sorted[i + 1];
+
+          switch (sortKey) {
+            case 'amount-asc':
+              if (a.amount > b.amount) return false;
+              // tiebreaker: newer first (descending timestamp)
+              if (a.amount === b.amount && a.timestamp < b.timestamp) return false;
+              break;
+            case 'amount-desc':
+              if (a.amount < b.amount) return false;
+              if (a.amount === b.amount && a.timestamp < b.timestamp) return false;
+              break;
+            case 'category-az': {
+              const cmp = a.category.localeCompare(b.category);
+              if (cmp > 0) return false;
+              if (cmp === 0 && a.timestamp < b.timestamp) return false;
+              break;
+            }
+            case 'category-za': {
+              const cmp = b.category.localeCompare(a.category);
+              if (cmp > 0) return false;
+              if (cmp === 0 && a.timestamp < b.timestamp) return false;
+              break;
+            }
+            case 'newest':
+            default:
+              if (a.timestamp < b.timestamp) return false;
+              break;
+          }
+        }
+        return true;
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 4: Month filter restricts to selected period
+    // Feature: expense-budget-visualizer, Property 4: Month filter correctness
+    // Validates: Requirements 8.2, 8.3
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P4a: SortFilter.filter — every result starts with the month key',
+      () => fc.tuple(
+        fc.array(txnArb, { minLength: 0, maxLength: 30 }),
+        // Generate a realistic YYYY-MM key
+        fc.date({ min: new Date('2020-01-01'), max: new Date('2030-12-31') })
+          .map(d => d.toISOString().slice(0, 7))
+      ),
+      ([transactions, monthKey]) => {
+        const filtered = SortFilter.filter(transactions, monthKey);
+        return filtered.every(t => t.timestamp.startsWith(monthKey));
+      }
+    );
+
+    runProperty(
+      'P4b: SortFilter.filter — null monthKey returns all transactions',
+      () => fc.array(txnArb, { minLength: 0, maxLength: 30 }),
+      (transactions) => {
+        const filtered = SortFilter.filter(transactions, null);
+        return (
+          filtered.length === transactions.length &&
+          transactions.every((t, i) => filtered[i] === t)
+        );
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 5: Category duplicate rejection (case-insensitive)
+    // Feature: expense-budget-visualizer, Property 5: Duplicate category rejection
+    // Validates: Requirements 7.2, 7.3
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P5: Validator.validateCategory — case-insensitive duplicate is rejected',
+      () => fc.array(
+        // Names that contain at least one ASCII letter so toUpperCase/toLowerCase differ
+        fc.string({ minLength: 1, maxLength: 50 }).filter(s => /[a-zA-Z]/.test(s)),
+        { minLength: 1, maxLength: 20 }
+      ).chain(existing =>
+        // Pick an index into that array, then produce the same name in upper-case,
+        // lower-case, or mixed — all of which must be rejected as duplicates.
+        fc.tuple(
+          fc.constant(existing),
+          fc.integer({ min: 0, max: existing.length - 1 }),
+          fc.constantFrom('upper', 'lower', 'asis')
+        ).map(([list, idx, caseVariant]) => {
+          const originalName = list[idx];
+          let newName;
+          if (caseVariant === 'upper')      newName = originalName.toUpperCase();
+          else if (caseVariant === 'lower') newName = originalName.toLowerCase();
+          else                              newName = originalName; // exact duplicate
+          return { existing: list, newName };
+        })
+      ),
+      ({ existing, newName }) => {
+        // newName is the same as (or a case variant of) one of the existing names.
+        // Validator must reject it as a duplicate.
+        const result = Validator.validateCategory(newName, existing);
+        return result.valid === false;
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 6: Category persistence round-trip
+    // Feature: expense-budget-visualizer, Property 6: Category round-trip
+    // Validates: Requirements 2.4, 7.4, 7.5
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P6: StorageManager — save then load categories produces equivalent array',
+      () => fc.array(
+        fc.string({ minLength: 1, maxLength: 50 }),
+        { minLength: 0, maxLength: 50 }
+      ),
+      (categories) => {
+        return withMockStorage(() => {
+          StorageManager.saveCategories(categories);
+          const loaded = StorageManager.loadCategories();
+          if (loaded.length !== categories.length) return false;
+          return categories.every((cat, i) => loaded[i] === cat);
+        });
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 7: Transaction persistence round-trip
+    // Feature: expense-budget-visualizer, Property 7: Transaction round-trip
+    // Validates: Requirements 2.1, 2.3
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P7: StorageManager — save then load transactions produces equivalent array',
+      () => fc.array(txnArb, { minLength: 0, maxLength: 20 }),
+      (transactions) => {
+        return withMockStorage(() => {
+          StorageManager.saveTransactions(transactions);
+          const loaded = StorageManager.loadTransactions();
+          if (loaded.length !== transactions.length) return false;
+          // Compare via JSON serialization because JSON.stringify/parse of a float
+          // will reproduce the exact same value (JS number → JSON string → JS number
+          // is a round-trip). String fields are exact.
+          return transactions.every((orig, i) => {
+            const l = loaded[i];
+            return (
+              l.id        === orig.id        &&
+              l.name      === orig.name      &&
+              l.amount    === orig.amount    &&  // JSON preserves IEEE 754 doubles exactly
+              l.category  === orig.category  &&
+              l.timestamp === orig.timestamp
+            );
+          });
+        });
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 8: Chart category percentages sum to 100
+    // Feature: expense-budget-visualizer, Property 8: Chart percentages sum to 100
+    // Validates: Requirements 6.1
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P8: computeCategoryPercentages — percentages sum to 100 (±0.5)',
+      () => fc.array(txnArb, { minLength: 1, maxLength: 30 }),
+      (transactions) => {
+        const data = computeCategoryPercentages(transactions);
+        const sum  = data.reduce((s, d) => s + d.percentage, 0);
+        return Math.abs(sum - 100) <= 0.5;
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 9: Sort does not mutate input array
+    // Feature: expense-budget-visualizer, Property 9: Sort non-mutation
+    // Validates: Requirements 9.1 (structural invariant)
+    // ═══════════════════════════════════════════════════════════
+    runProperty(
+      'P9: SortFilter.sort — does not mutate the input array',
+      () => fc.tuple(
+        fc.array(txnArb, { minLength: 0, maxLength: 30 }),
+        sortKeyArb
+      ),
+      ([transactions, sortKey]) => {
+        // Snapshot of ids in original order
+        const snapshotIds     = transactions.map(t => t.id);
+        const snapshotLengths = transactions.length;
+
+        SortFilter.sort(transactions, sortKey);
+
+        // Original array must be unchanged
+        if (transactions.length !== snapshotLengths) return false;
+        return snapshotIds.every((id, i) => transactions[i].id === id);
+      }
+    );
+
+
+    // ═══════════════════════════════════════════════════════════
+    // Property 10: Category length constraint enforcement
+    // Feature: expense-budget-visualizer, Property 10: Category length enforcement
+    // Validates: Requirements 7.2, 7.3
+    // ═══════════════════════════════════════════════════════════
+
+    // 10a — length 0 is always rejected
+    runProperty(
+      'P10a: Validator.validateCategory — empty string is always invalid',
+      () => fc.constant([]),   // empty existing list so duplicate check can't interfere
+      (existing) => {
+        const result = Validator.validateCategory('', existing);
+        return result.valid === false;
+      }
+    );
+
+    // 10b — length > 50 is always rejected
+    runProperty(
+      'P10b: Validator.validateCategory — name longer than 50 chars is invalid',
+      () => fc.tuple(
+        fc.string({ minLength: 51, maxLength: 200 }),
+        fc.constant([])
+      ),
+      ([name, existing]) => {
+        const result = Validator.validateCategory(name, existing);
+        return result.valid === false;
+      }
+    );
+
+    // 10c — length 1–50 with no duplicate is always valid
+    runProperty(
+      'P10c: Validator.validateCategory — name of 1-50 chars with no duplicate is valid',
+      () => fc.string({ minLength: 1, maxLength: 50 }).map(name => {
+        // Build an existing list that does NOT contain this name (case-insensitive)
+        return { name, existing: [] };
+      }),
+      ({ name, existing }) => {
+        const result = Validator.validateCategory(name, existing);
+        return result.valid === true;
+      }
+    );
+
+    // 10d — length 1–50 with no case-insensitive duplicate in a populated list is valid
+    runProperty(
+      'P10d: Validator.validateCategory — unique name in non-empty list is valid',
+      () => fc.tuple(
+        fc.string({ minLength: 1, maxLength: 50 }),
+        fc.array(
+          fc.string({ minLength: 1, maxLength: 50 }),
+          { minLength: 1, maxLength: 20 }
+        )
+      ).filter(([name, existing]) =>
+        // Keep only combos where name is genuinely unique (case-insensitive)
+        !existing.some(e => e.toLowerCase() === name.toLowerCase())
+      ),
+      ([name, existing]) => {
+        const result = Validator.validateCategory(name, existing);
+        return result.valid === true;
+      }
+    );
+
+
+    // ─────────────────────────────────────────────────────────
+    // Finalize summary
+    // ─────────────────────────────────────────────────────────
+    finalizeSummary();
+  </script>
+</body>
+</html>

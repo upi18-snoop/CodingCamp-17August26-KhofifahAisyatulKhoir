@@ -1,0 +1,32 @@
+/* Expense & Budget Visualizer styles */
+
+/* ── Chart legend ─────────────────────────────────────────────────────── */
+#chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  font-weight: 600;
+}
+
+.legend-amount {
+  color: #555;
+}

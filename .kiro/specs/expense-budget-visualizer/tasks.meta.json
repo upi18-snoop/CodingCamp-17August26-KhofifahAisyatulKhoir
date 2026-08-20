@@ -1,0 +1,253 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Project scaffolding — create the base file structure": [
+      {
+        "executionId": "e86e3b3c-0146-4ce8-a41f-66eba87023d4",
+        "chatSessionId": "sess_f013f05c-a48a-4099-91a7-7528e610e78c",
+        "timestamp": 1787237710950
+      },
+      {
+        "executionId": "e86e3b3c-0146-4ce8-a41f-66eba87023d4",
+        "chatSessionId": "sess_f013f05c-a48a-4099-91a7-7528e610e78c",
+        "timestamp": 1787237802453
+      }
+    ],
+    "2.1 Implement `StorageManager` factory object in `js/app.js`": [
+      {
+        "executionId": "c3d207df-aaf4-4253-ae2b-7cd6a152758a",
+        "chatSessionId": "sess_9d6a86e2-bdfa-4a7d-a9e3-4c8e3e17a229",
+        "timestamp": 1787237817936
+      },
+      {
+        "executionId": "c3d207df-aaf4-4253-ae2b-7cd6a152758a",
+        "chatSessionId": "sess_9d6a86e2-bdfa-4a7d-a9e3-4c8e3e17a229",
+        "timestamp": 1787237884863
+      }
+    ],
+    "2. StorageManager — localStorage CRUD with error handling": [
+      {
+        "executionId": "c3d207df-aaf4-4253-ae2b-7cd6a152758a",
+        "chatSessionId": "sess_9d6a86e2-bdfa-4a7d-a9e3-4c8e3e17a229",
+        "timestamp": 1787237884952
+      }
+    ],
+    "3.1 Implement `Validator` factory object in `js/app.js`": [
+      {
+        "executionId": "6f6449ec-4a19-4a83-b2a6-0e5ad91c9e9a",
+        "chatSessionId": "sess_d8d6ccc8-70e2-4c1a-936e-50edee340f40",
+        "timestamp": 1787237901322
+      },
+      {
+        "executionId": "6f6449ec-4a19-4a83-b2a6-0e5ad91c9e9a",
+        "chatSessionId": "sess_d8d6ccc8-70e2-4c1a-936e-50edee340f40",
+        "timestamp": 1787237961685
+      }
+    ],
+    "3. Validator — transaction and category validation": [
+      {
+        "executionId": "6f6449ec-4a19-4a83-b2a6-0e5ad91c9e9a",
+        "chatSessionId": "sess_d8d6ccc8-70e2-4c1a-936e-50edee340f40",
+        "timestamp": 1787237961780
+      }
+    ],
+    "4.1 Implement `CategoryManager` factory object in `js/app.js`": [
+      {
+        "executionId": "aed2c7fe-2853-448d-a445-2812f93f0e33",
+        "chatSessionId": "sess_273f40f4-f132-4645-acd8-3b1b1476f21d",
+        "timestamp": 1787237994476
+      },
+      {
+        "executionId": "aed2c7fe-2853-448d-a445-2812f93f0e33",
+        "chatSessionId": "sess_273f40f4-f132-4645-acd8-3b1b1476f21d",
+        "timestamp": 1787238085160
+      }
+    ],
+    "4. CategoryManager — category list management": [
+      {
+        "executionId": "aed2c7fe-2853-448d-a445-2812f93f0e33",
+        "chatSessionId": "sess_273f40f4-f132-4645-acd8-3b1b1476f21d",
+        "timestamp": 1787238085222
+      }
+    ],
+    "5.1 Implement `SortFilter` factory object in `js/app.js`": [
+      {
+        "executionId": "4d4b56c4-5f27-425e-9364-65f139e5e284",
+        "chatSessionId": "sess_f04c4d0c-c7b9-4fcf-90fd-de7bf0bc658a",
+        "timestamp": 1787238126292
+      },
+      {
+        "executionId": "4d4b56c4-5f27-425e-9364-65f139e5e284",
+        "chatSessionId": "sess_f04c4d0c-c7b9-4fcf-90fd-de7bf0bc658a",
+        "timestamp": 1787238185146
+      }
+    ],
+    "5. SortFilter — pure sort and filter functions": [
+      {
+        "executionId": "4d4b56c4-5f27-425e-9364-65f139e5e284",
+        "chatSessionId": "sess_f04c4d0c-c7b9-4fcf-90fd-de7bf0bc658a",
+        "timestamp": 1787238185282
+      }
+    ],
+    "6.1 Define the in-memory `AppState` object and helper utilities in `js/app.js`": [
+      {
+        "executionId": "986bcc2f-1e13-4d47-8fc5-872a3441a5be",
+        "chatSessionId": "sess_e15cd5cd-8beb-4941-9706-cd0d2acd3cd4",
+        "timestamp": 1787238221549
+      },
+      {
+        "executionId": "986bcc2f-1e13-4d47-8fc5-872a3441a5be",
+        "chatSessionId": "sess_e15cd5cd-8beb-4941-9706-cd0d2acd3cd4",
+        "timestamp": 1787238287115
+      }
+    ],
+    "6. Application state and helper utilities": [
+      {
+        "executionId": "986bcc2f-1e13-4d47-8fc5-872a3441a5be",
+        "chatSessionId": "sess_e15cd5cd-8beb-4941-9706-cd0d2acd3cd4",
+        "timestamp": 1787238287212
+      }
+    ],
+    "7.1 Build the Input Form markup and inline validation in `index.html` and `js/app.js`": [
+      {
+        "executionId": "263d9a68-9cdb-4c5f-a552-15edd54cffd1",
+        "chatSessionId": "sess_0b829d86-016d-4c2f-b498-4a0d4386db7b",
+        "timestamp": 1787238392001
+      },
+      {
+        "executionId": "263d9a68-9cdb-4c5f-a552-15edd54cffd1",
+        "chatSessionId": "sess_0b829d86-016d-4c2f-b498-4a0d4386db7b",
+        "timestamp": 1787238473965
+      }
+    ],
+    "7.2 Implement form submit handler in `js/app.js`": [
+      {
+        "executionId": "263d9a68-9cdb-4c5f-a552-15edd54cffd1",
+        "chatSessionId": "sess_0b829d86-016d-4c2f-b498-4a0d4386db7b",
+        "timestamp": 1787238478673
+      },
+      {
+        "executionId": "263d9a68-9cdb-4c5f-a552-15edd54cffd1",
+        "chatSessionId": "sess_0b829d86-016d-4c2f-b498-4a0d4386db7b",
+        "timestamp": 1787238570057
+      },
+      {
+        "executionId": "604f1308-5683-4bc1-b4fa-af6c5f583861",
+        "chatSessionId": "sess_4a0c16fb-06f5-41bd-b7a3-5d98bfc6a1fa",
+        "timestamp": 1787238585579
+      },
+      {
+        "executionId": "604f1308-5683-4bc1-b4fa-af6c5f583861",
+        "chatSessionId": "sess_4a0c16fb-06f5-41bd-b7a3-5d98bfc6a1fa",
+        "timestamp": 1787238602827
+      }
+    ],
+    "7. Input Form HTML and validation UI": [
+      {
+        "executionId": "263d9a68-9cdb-4c5f-a552-15edd54cffd1",
+        "chatSessionId": "sess_0b829d86-016d-4c2f-b498-4a0d4386db7b",
+        "timestamp": 1787238570165
+      }
+    ],
+    "8.1 Implement `renderTransactionList(transactions)` in `js/app.js`": [
+      {
+        "executionId": "3e48fd4e-5ccc-4801-b71d-f97c69018f5b",
+        "chatSessionId": "sess_f493844f-4eeb-4140-bf48-37ac57d1056f",
+        "timestamp": 1787238783898
+      },
+      {
+        "executionId": "3e48fd4e-5ccc-4801-b71d-f97c69018f5b",
+        "chatSessionId": "sess_f493844f-4eeb-4140-bf48-37ac57d1056f",
+        "timestamp": 1787238903785
+      }
+    ],
+    "8.2 Implement delete handler in `js/app.js`": [
+      {
+        "executionId": "3e48fd4e-5ccc-4801-b71d-f97c69018f5b",
+        "chatSessionId": "sess_f493844f-4eeb-4140-bf48-37ac57d1056f",
+        "timestamp": 1787238914001
+      },
+      {
+        "executionId": "3e48fd4e-5ccc-4801-b71d-f97c69018f5b",
+        "chatSessionId": "sess_f493844f-4eeb-4140-bf48-37ac57d1056f",
+        "timestamp": 1787238918986
+      }
+    ],
+    "8. Transaction List rendering": [
+      {
+        "executionId": "3e48fd4e-5ccc-4801-b71d-f97c69018f5b",
+        "chatSessionId": "sess_f493844f-4eeb-4140-bf48-37ac57d1056f",
+        "timestamp": 1787238919096
+      }
+    ],
+    "9.1 Implement `renderBalance()` in `js/app.js`": [
+      {
+        "executionId": "4a1e6713-5dd0-4d75-a42d-ffd91c5e3607",
+        "chatSessionId": "sess_395b2c39-176b-4b18-85b9-2ca7c0f103bb",
+        "timestamp": 1787238988132
+      },
+      {
+        "executionId": "4a1e6713-5dd0-4d75-a42d-ffd91c5e3607",
+        "chatSessionId": "sess_395b2c39-176b-4b18-85b9-2ca7c0f103bb",
+        "timestamp": 1787239065583
+      }
+    ],
+    "9. Balance Display rendering": [
+      {
+        "executionId": "4a1e6713-5dd0-4d75-a42d-ffd91c5e3607",
+        "chatSessionId": "sess_395b2c39-176b-4b18-85b9-2ca7c0f103bb",
+        "timestamp": 1787239065703
+      }
+    ],
+    "10.1 Add Chart.js CDN `<script>` tag and canvas markup in `index.html`": [
+      {
+        "executionId": "00f745a1-4923-4576-825b-ff8c7e800203",
+        "chatSessionId": "sess_6da4db6e-1025-4b5f-a7cf-c3647a4419ed",
+        "timestamp": 1787239127211
+      },
+      {
+        "executionId": "00f745a1-4923-4576-825b-ff8c7e800203",
+        "chatSessionId": "sess_6da4db6e-1025-4b5f-a7cf-c3647a4419ed",
+        "timestamp": 1787239160767
+      }
+    ],
+    "10.2 Implement `computeCategoryPercentages(transactions)` and `renderChart()` in `js/app.js`": [
+      {
+        "executionId": "00f745a1-4923-4576-825b-ff8c7e800203",
+        "chatSessionId": "sess_6da4db6e-1025-4b5f-a7cf-c3647a4419ed",
+        "timestamp": 1787239165246
+      },
+      {
+        "executionId": "00f745a1-4923-4576-825b-ff8c7e800203",
+        "chatSessionId": "sess_6da4db6e-1025-4b5f-a7cf-c3647a4419ed",
+        "timestamp": 1787239277331
+      }
+    ],
+    "10. Chart.js pie chart": [
+      {
+        "executionId": "00f745a1-4923-4576-825b-ff8c7e800203",
+        "chatSessionId": "sess_6da4db6e-1025-4b5f-a7cf-c3647a4419ed",
+        "timestamp": 1787239277475
+      }
+    ],
+    "11. Checkpoint — core functionality complete": [
+      {
+        "executionId": "613b9eb2-fb82-47d7-90e6-703b98eef1df",
+        "chatSessionId": "sess_b5a1a5e5-5afb-44b8-8e47-5ab07e4b3e1f",
+        "timestamp": 1787239352052
+      },
+      {
+        "executionId": "613b9eb2-fb82-47d7-90e6-703b98eef1df",
+        "chatSessionId": "sess_b5a1a5e5-5afb-44b8-8e47-5ab07e4b3e1f",
+        "timestamp": 1787239833921
+      }
+    ],
+    "12.1 Build Category Manager markup and handlers in `index.html` and `js/app.js`": [
+      {
+        "executionId": "f717b102-c738-450a-8c0c-c421c7eb3f8c",
+        "chatSessionId": "sess_f3512d85-0480-4487-b087-55fea3ad4d20",
+        "timestamp": 1787239886839
+      }
+    ]
+  }
+}
