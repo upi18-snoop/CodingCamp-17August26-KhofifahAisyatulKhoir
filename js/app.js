@@ -493,6 +493,27 @@ function renderBalance() {
 }
 
 // ─────────────────────────────────────────────
+// renderSummary
+// Filters AppState.transactions by AppState.activeFilter (YYYY-MM),
+// sums their amounts, and writes the formatted currency string to
+// #summary-total.  When no transactions exist in the selected period
+// the span shows a "no transactions" message instead.
+// Requirements: 8.2, 8.3, 8.6
+// ─────────────────────────────────────────────
+function renderSummary() {
+  const el = document.getElementById('summary-total');
+  if (!el) return;
+
+  const filtered = SortFilter.filter(AppState.transactions, AppState.activeFilter);
+
+  if (AppState.activeFilter !== null && filtered.length === 0) {
+    el.textContent = 'No transactions found for this period';
+  } else {
+    el.textContent = formatCurrency(sumAmounts(filtered));
+  }
+}
+
+// ─────────────────────────────────────────────
 // Chart color palette
 // A fixed array of hex colors that cycles when there are more categories
 // than palette entries.
@@ -770,6 +791,7 @@ document.addEventListener('DOMContentLoaded', function wireDeleteBtn() {
     AppState.transactions = updated;
     renderTransactionList();
     renderBalance();
+    renderSummary();
     renderChart();
   });
 });
@@ -824,6 +846,7 @@ document.addEventListener('DOMContentLoaded', function wireAddBtn() {
     // ── 7. Re-render affected components ───────
     renderBalance();
     renderTransactionList();
+    renderSummary();
     renderChart();
 
     // ── 8. Reset form ──────────────────────────
@@ -838,28 +861,216 @@ document.addEventListener('DOMContentLoaded', function wireAddBtn() {
 });
 
 // ─────────────────────────────────────────────
+// Month-filter change handler
+// Updates AppState.activeFilter when the user picks a month,
+// then re-renders the list, summary, and chart.
+// Requirements: 8.2, 8.3, 8.4
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function wireMonthFilter() {
+  const monthInput = document.getElementById('month-filter');
+  if (!monthInput) return;
+
+  monthInput.addEventListener('change', function handleMonthChange() {
+    AppState.activeFilter = monthInput.value || null;
+    renderTransactionList();
+    renderSummary();
+    renderChart();
+  });
+});
+
+// ─────────────────────────────────────────────
+// Clear-filter click handler
+// Resets AppState.activeFilter to null, clears the month input,
+// and restores the full transaction list, summary, and chart.
+// Requirements: 8.5
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function wireClearFilter() {
+  const clearBtn = document.getElementById('clear-filter');
+  if (!clearBtn) return;
+
+  clearBtn.addEventListener('click', function handleClearFilter() {
+    AppState.activeFilter = null;
+
+    const monthInput = document.getElementById('month-filter');
+    if (monthInput) monthInput.value = '';
+
+    renderTransactionList();
+    renderSummary();
+    renderChart();
+  });
+});
+
+// ─────────────────────────────────────────────
+// updateSortActiveState
+// Sets the data-active attribute on the currently selected <option>
+// in #sort-control and removes it from all other options.
+// Used by CSS via the [data-active] selector to visually distinguish
+// the active sort choice.
+// Requirements: 9.5
+// ─────────────────────────────────────────────
+function updateSortActiveState() {
+  const select = document.getElementById('sort-control');
+  if (!select) return;
+
+  Array.from(select.options).forEach((option) => {
+    if (option.value === AppState.activeSort) {
+      option.setAttribute('data-active', '');
+    } else {
+      option.removeAttribute('data-active');
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// Sort Control change handler
+// Updates AppState.activeSort when the user selects a new sort option,
+// re-renders the Transaction List, and refreshes the active state.
+// Requirements: 9.1, 9.2, 9.3, 9.4
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function wireSortControl() {
+  const sortSelect = document.getElementById('sort-control');
+  if (!sortSelect) return;
+
+  sortSelect.addEventListener('change', function handleSortChange() {
+    AppState.activeSort = sortSelect.value;
+    renderTransactionList();
+    updateSortActiveState();
+  });
+});
+
+// ─────────────────────────────────────────────
+// isStructurallyValid
+// Returns true when a transaction object has all five required
+// fields with appropriate types/values.
+// Used by initApp to silently discard corrupted records.
+// ─────────────────────────────────────────────
+function isStructurallyValid(t) {
+  return (
+    t !== null &&
+    typeof t === 'object' &&
+    typeof t.id        === 'string' && t.id.length > 0 &&
+    typeof t.name      === 'string' && t.name.length > 0 &&
+    typeof t.amount    === 'number' && t.amount > 0 &&
+    typeof t.category  === 'string' && t.category.length > 0 &&
+    typeof t.timestamp === 'string' && t.timestamp.length > 0
+  );
+}
+
+// ─────────────────────────────────────────────
 // initApp
 // Entry point — runs once on DOMContentLoaded.
-// Loads persisted data into AppState, then renders
-// the initial UI before any user interaction is possible.
-// Requirements: 2.2, 5.5
+//
+// Steps:
+//   1. Feature-detect localStorage; show unsupported-browser banner and halt
+//      if it is missing.
+//   2. Feature-detect Intl.NumberFormat and crypto.randomUUID; install a
+//      module-level fallback UUID generator if randomUUID is absent.
+//   3. Load transactions and categories from localStorage; surface any
+//      read error via a dismissible banner.
+//   4. Validate each loaded transaction for required fields; silently
+//      discard corrupt records and show a warning banner if any were dropped.
+//   5. Populate AppState.
+//   6. Set the month-filter default to the current calendar month.
+//   7. Render all UI components before returning control to the user.
+//
+// Requirements: 1.3, 1.5, 2.2, 2.7
 // ─────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function initApp() {
-  // ── Load persisted state ───────────────────
-  AppState.transactions    = StorageManager.loadTransactions();
-  AppState.customCategories = StorageManager.loadCategories();
+function initApp() {
+  // ── 1. Feature-detect localStorage ────────────────────────────────────
+  const hasLocalStorage = (function () {
+    try {
+      return typeof window !== 'undefined' &&
+             typeof window.localStorage !== 'undefined' &&
+             window.localStorage !== null;
+    } catch (_) {
+      // SecurityError in some restricted contexts.
+      return false;
+    }
+  })();
 
-  // Surface any read error that occurred during load.
-  if (lastReadError) {
-    showErrorBanner("Could not load saved data. Your browser may have storage disabled.");
-    lastReadError = null;
+  if (!hasLocalStorage) {
+    const banner = document.getElementById('unsupported-banner');
+    if (banner) banner.removeAttribute('hidden');
+    // Halt — do not attempt any further initialization.
+    return;
   }
 
-  // ── Populate category dropdown ─────────────
-  renderCategoryDropdown(AppState.customCategories);
+  // ── 2. Feature-detect Intl.NumberFormat and crypto.randomUUID ─────────
+  //
+  // Intl.NumberFormat: formatCurrency() already calls it; if it is absent
+  // the app would crash on first render.  We note the absence but do not
+  // halt — formatCurrency will degrade to a plain number string in very old
+  // browsers.  (Modern browsers always have this.)
+  //
+  // crypto.randomUUID: generateId() already has a Math.random() fallback,
+  // so no additional polyfill is needed here.  We confirm the detection
+  // for logging/diagnostics only.
+  if (typeof window.Intl === 'undefined' || typeof window.Intl.NumberFormat !== 'function') {
+    // Non-fatal — formatCurrency will fall back to plain number formatting.
+    console.warn('Intl.NumberFormat is unavailable; currency formatting may be degraded.');
+  }
 
-  // ── Render initial UI ──────────────────────
+  if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+    // generateId() already contains a Math.random() fallback UUID generator,
+    // so no additional polyfill is necessary.
+    console.warn('crypto.randomUUID is unavailable; using fallback UUID generator.');
+  }
+
+  // ── 3. Load transactions from localStorage ─────────────────────────────
+  lastReadError = null;
+  const rawTransactions = StorageManager.loadTransactions();
+  const transactionReadFailed = lastReadError !== null;
+
+  lastReadError = null;
+  const rawCategories = StorageManager.loadCategories();
+  const categoryReadFailed = lastReadError !== null;
+  lastReadError = null;
+
+  if (transactionReadFailed || categoryReadFailed) {
+    showErrorBanner(
+      'Could not load saved data. Your browser may have storage disabled.'
+    );
+  }
+
+  // ── 4. Structural validation — discard corrupt transaction records ──────
+  const validTransactions   = [];
+  const invalidTransactions = [];
+
+  rawTransactions.forEach((t) => {
+    if (isStructurallyValid(t)) {
+      validTransactions.push(t);
+    } else {
+      invalidTransactions.push(t);
+    }
+  });
+
+  if (invalidTransactions.length > 0) {
+    showErrorBanner('Some records were skipped due to data corruption.');
+  }
+
+  // ── 5. Populate AppState ───────────────────────────────────────────────
+  AppState.transactions     = validTransactions;
+  AppState.customCategories = rawCategories;
+
+  // ── 6. Set month-filter default to current YYYY-MM ────────────────────
+  // Requirement 8.1 — defaults to current calendar month on load.
+  const monthInput = document.getElementById('month-filter');
+  if (monthInput) {
+    const now  = new Date();
+    const yyyy = now.getFullYear();
+    const mm   = String(now.getMonth() + 1).padStart(2, '0');
+    monthInput.value      = `${yyyy}-${mm}`;
+    AppState.activeFilter = `${yyyy}-${mm}`;
+  }
+
+  // ── 7. Render all UI components ────────────────────────────────────────
+  renderCategoryDropdown(AppState.customCategories); // Requirement 3.6, 7.5
+  renderTransactionList();  // Requirement 4.3 — populated before interaction
   renderBalance();          // Requirement 5.5 — balance visible before interaction
-  renderTransactionList();  // Show persisted transactions
-  renderChart();            // Chart reflects persisted data
-});
+  renderChart();            // Requirement 6.3 — chart reflects persisted data
+  renderSummary();          // Requirement 8.3 — monthly total for current month
+  updateSortActiveState();  // Requirement 9.5 — mark default sort option as active
+}
+
+// Wire initApp to DOMContentLoaded — the single top-level entry point.
+document.addEventListener('DOMContentLoaded', initApp);

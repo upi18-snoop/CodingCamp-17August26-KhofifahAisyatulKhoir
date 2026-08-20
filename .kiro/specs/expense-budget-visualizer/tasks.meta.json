@@ -248,6 +248,70 @@
         "chatSessionId": "sess_f3512d85-0480-4487-b087-55fea3ad4d20",
         "timestamp": 1787239886839
       }
+    ],
+    "13.1 Build Monthly Summary markup and handlers in `index.html` and `js/app.js`": [
+      {
+        "executionId": "b02b1e85-63ac-4b38-96e5-95b0095c0a36",
+        "chatSessionId": "sess_3301260e-5598-4214-bbd6-9edb7031770c",
+        "timestamp": 1787241769549
+      },
+      {
+        "executionId": "b02b1e85-63ac-4b38-96e5-95b0095c0a36",
+        "chatSessionId": "sess_3301260e-5598-4214-bbd6-9edb7031770c",
+        "timestamp": 1787241900497
+      }
+    ],
+    "13. Monthly Summary view": [
+      {
+        "executionId": "b02b1e85-63ac-4b38-96e5-95b0095c0a36",
+        "chatSessionId": "sess_3301260e-5598-4214-bbd6-9edb7031770c",
+        "timestamp": 1787241900617
+      }
+    ],
+    "14.1 Build Sort Control markup and handler in `index.html` and `js/app.js`": [
+      {
+        "executionId": "68a3383f-dc35-450b-ab47-4b372e87c1b0",
+        "chatSessionId": "sess_6461cb9b-8289-44e0-bb58-ada9c447de65",
+        "timestamp": 1787241943116
+      },
+      {
+        "executionId": "68a3383f-dc35-450b-ab47-4b372e87c1b0",
+        "chatSessionId": "sess_6461cb9b-8289-44e0-bb58-ada9c447de65",
+        "timestamp": 1787242024022
+      }
+    ],
+    "14. Sort Control": [
+      {
+        "executionId": "68a3383f-dc35-450b-ab47-4b372e87c1b0",
+        "chatSessionId": "sess_6461cb9b-8289-44e0-bb58-ada9c447de65",
+        "timestamp": 1787242024128
+      }
+    ],
+    "15.1 Implement `initApp()` in `js/app.js` and call it on `DOMContentLoaded`": [
+      {
+        "executionId": "624302bb-1eb1-41ac-9a00-b0f92cc859c2",
+        "chatSessionId": "sess_181eb008-ddc1-4ea0-ae31-d3dc1be813c2",
+        "timestamp": 1787242078323
+      },
+      {
+        "executionId": "624302bb-1eb1-41ac-9a00-b0f92cc859c2",
+        "chatSessionId": "sess_181eb008-ddc1-4ea0-ae31-d3dc1be813c2",
+        "timestamp": 1787242232892
+      }
+    ],
+    "15. App initialization and feature detection": [
+      {
+        "executionId": "624302bb-1eb1-41ac-9a00-b0f92cc859c2",
+        "chatSessionId": "sess_181eb008-ddc1-4ea0-ae31-d3dc1be813c2",
+        "timestamp": 1787242232977
+      }
+    ],
+    "16.1 Write responsive layout and base styles in `css/styles.css`": [
+      {
+        "executionId": "271a9e6a-c88f-4f0d-8356-797938e31f50",
+        "chatSessionId": "sess_e2a7c33c-f06c-451b-9a47-2501e2f465d6",
+        "timestamp": 1787242300484
+      }
     ]
   }
 }

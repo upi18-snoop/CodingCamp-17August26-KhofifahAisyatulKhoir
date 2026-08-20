@@ -30,3 +30,19 @@
 .legend-amount {
   color: #555;
 }
+
+/* ── Unsupported-browser banner ───────────────────────────────────────── */
+/* Shown by initApp() when localStorage is unavailable.                    */
+/* Hidden by default via the `hidden` HTML attribute on the element.       */
+#unsupported-banner {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #5a4000;
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+#unsupported-banner p {
+  margin: 0;
+}

@@ -8,6 +8,15 @@
 </head>
 <body>
 
+  <!-- Shown by initApp() if localStorage is unavailable (unsupported browser). -->
+  <!-- Hidden by default via the hidden attribute. -->
+  <div id="unsupported-banner" role="alert" hidden>
+    <p>
+      Your browser does not support a required feature (localStorage).
+      Please upgrade to a modern browser such as Chrome, Firefox, Edge, or Safari.
+    </p>
+  </div>
+
   <header>
     <h1>Expense &amp; Budget Visualizer</h1>
     <div class="balance-display">
@@ -74,12 +83,31 @@
 
     <section id="summary-section">
       <h2>Monthly Summary</h2>
-      <!-- Monthly_Summary: month filter input, clear button, totals -->
+      <div class="summary-controls">
+        <label for="month-filter">Filter by month:</label>
+        <input type="month" id="month-filter" aria-label="Filter transactions by month">
+        <button type="button" id="clear-filter">Show All</button>
+      </div>
+      <div class="summary-total-row">
+        <span class="summary-label">Period Total:</span>
+        <span id="summary-total">$0.00</span>
+      </div>
     </section>
 
     <section id="list-section">
       <h2>Transaction History</h2>
-      <!-- Sort_Control + Transaction_List -->
+
+      <div class="sort-control-wrapper">
+        <label for="sort-control">Sort by:</label>
+        <select id="sort-control" aria-label="Sort transactions">
+          <option value="newest" selected>Newest First</option>
+          <option value="amount-asc">Amount: Low to High</option>
+          <option value="amount-desc">Amount: High to Low</option>
+          <option value="category-az">Category: A &#8594; Z</option>
+          <option value="category-za">Category: Z &#8594; A</option>
+        </select>
+      </div>
+
       <ul id="transaction-list" aria-label="Transaction history">
         <!-- populated by renderTransactionList() -->
       </ul>

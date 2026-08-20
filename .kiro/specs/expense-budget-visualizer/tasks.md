@@ -126,8 +126,8 @@ tests/property.html
     - Implement delete-category handler: remove from `AppState.customCategories`, call `StorageManager.saveCategories`, re-render category list and dropdown
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-- [~] 13. Monthly Summary view
-  - [ ] 13.1 Build Monthly Summary markup and handlers in `index.html` and `js/app.js`
+- [x] 13. Monthly Summary view
+  - [x] 13.1 Build Monthly Summary markup and handlers in `index.html` and `js/app.js`
     - Add to `#summary-section`: `<input type="month" id="month-filter">`, `<button id="clear-filter">Show All</button>`, `<span id="summary-total">`
     - On initialization set `#month-filter` value to current `YYYY-MM`
     - Implement `renderSummary()`: compute `sumAmounts(SortFilter.filter(AppState.transactions, AppState.activeFilter))` and write to `#summary-total`; if no transactions in period show "No transactions found for this period"
@@ -135,16 +135,16 @@ tests/property.html
     - Attach click handler on `#clear-filter`: reset `AppState.activeFilter = null`, reset `#month-filter` value, re-render all three views
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
-- [~] 14. Sort Control
-  - [ ] 14.1 Build Sort Control markup and handler in `index.html` and `js/app.js`
+- [x] 14. Sort Control
+  - [x] 14.1 Build Sort Control markup and handler in `index.html` and `js/app.js`
     - Add to `#list-section`: `<select id="sort-control">` with options `newest`, `amount-asc`, `amount-desc`, `category-az`, `category-za`
     - Default selected value: `newest`
     - Implement `updateSortActiveState()`: set `data-active` attribute on the currently selected `<option>` and remove it from others (used by CSS for visual distinction)
     - Attach change handler: update `AppState.activeSort`, call `renderTransactionList`, call `updateSortActiveState`
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [~] 15. App initialization and feature detection
-  - [ ] 15.1 Implement `initApp()` in `js/app.js` and call it on `DOMContentLoaded`
+- [x] 15. App initialization and feature detection
+  - [x] 15.1 Implement `initApp()` in `js/app.js` and call it on `DOMContentLoaded`
     - Feature-detect `window.localStorage`, `window.Intl?.NumberFormat`, and `window.crypto?.randomUUID` (install fallback UUID generator if `randomUUID` absent)
     - If `localStorage` is absent: show unsupported-browser banner, halt initialization
     - Call `StorageManager.loadTransactions()` and `StorageManager.loadCategories()`; on read error show dismissible error banner: *"Could not load saved data. Your browser may have storage disabled."*
@@ -153,7 +153,7 @@ tests/property.html
     - _Requirements: 1.3, 1.5, 2.2, 2.7_
 
 - [~] 16. Responsive CSS and accessibility
-  - [ ] 16.1 Write responsive layout and base styles in `css/styles.css`
+  - [-] 16.1 Write responsive layout and base styles in `css/styles.css`
     - Apply a fluid single-column layout at 320px that expands to a two-column (form + chart side-by-side) layout at ≥ 768px and a three-column arrangement at ≥ 1200px using CSS Grid or Flexbox; no horizontal scrollbar from 320px to 1920px
     - Set font sizes for headings, labels, amounts, and body text such that each level differs by at least 2px from adjacent levels
     - Choose foreground/background color pairs meeting WCAG 2.1 AA: ≥ 4.5:1 for normal text, ≥ 3:1 for large text
