@@ -5,12 +5,10 @@
 Build a fully client-side, single-page web application using plain HTML, CSS, and Vanilla JavaScript. All data persists in `localStorage`. The implementation is structured as a series of incremental steps — each step extends the previous — ending with all components wired together and covered by property-based tests.
 
 The final file structure is:
-```
 index.html
 css/styles.css
 js/app.js
 tests/property.html
-```
 
 ---
 
